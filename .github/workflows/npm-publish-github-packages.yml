@@ -21,7 +21,14 @@ jobs:
           cache: 'npm'
 
       - name: Install Dependencies
-        run: npm ci
+        run: |
+          if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then
+            echo "Lock file found → using npm ci"
+            npm ci
+          else
+            echo "No lock file → using npm install"
+            npm install
+          fi
 
       - name: Run Tests
         run: npm test
@@ -52,11 +59,19 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
 
-            # Stop and remove old containers
+            # Ensure Docker & Compose are installed
+            if ! command -v docker &> /dev/null; then
+              echo "Docker not found, installing..."
+              curl -fsSL https://get.docker.com | sh
+              sudo usermod -aG docker $USER
+            fi
+
+            if ! command -v docker compose &> /dev/null; then
+              echo "Docker Compose plugin not found, installing..."
+              sudo apt-get update && sudo apt-get install -y docker-compose-plugin
+            fi
+
+            # Stop old containers and rebuild
             docker compose down
-
-            # Build fresh images
             docker compose build --no-cache
-
-            # Start in detached mode
             docker compose up -d
