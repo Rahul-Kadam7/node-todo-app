@@ -17,18 +17,10 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'npm'
+          node-version: 20   # no caching since no lock file
 
       - name: Install Dependencies
-        run: |
-          if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then
-            echo "Lock file found → using npm ci"
-            npm ci
-          else
-            echo "No lock file → using npm install"
-            npm install
-          fi
+        run: npm install
 
       - name: Run Tests
         run: npm test
