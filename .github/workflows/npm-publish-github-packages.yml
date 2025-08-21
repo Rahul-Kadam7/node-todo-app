@@ -17,16 +17,28 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20   # no caching since no lock file
+          node-version: 20
 
       - name: Install Dependencies
         run: npm install
 
-      - name: Run Tests
-        run: npm test
+      - name: Run Tests (skip if not defined)
+        run: |
+          if npm run | grep -q " test"; then
+            echo "Running tests..."
+            npm test
+          else
+            echo "No test script found. Skipping..."
+          fi
 
-      - name: Build App
-        run: npm run build --if-present
+      - name: Build App (skip if not defined)
+        run: |
+          if npm run | grep -q " build"; then
+            echo "Building app..."
+            npm run build
+          else
+            echo "No build script found. Skipping..."
+          fi
 
   deploy:
     runs-on: ubuntu-latest
